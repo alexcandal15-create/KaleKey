@@ -1,0 +1,29 @@
+name: Build VST3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build plugin
+        run: cmake --build build --config Release --target SampleKeyAnalyzer_VST3
+
+      - name: Run algorithm tests
+        run: |
+          cmake --build build --config Release --target KeyDetectorTests
+          build\Release\KeyDetectorTests.exe
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: SampleKeyAnalyzer-VST3
+          path: build/SampleKeyAnalyzer_artefacts/Release/VST3/
