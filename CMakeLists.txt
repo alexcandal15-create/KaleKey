@@ -7,18 +7,16 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 option(SKA_BUILD_TESTS "Build the key-detection unit tests" ON)
 
-# ---- Detection core (pure C++, no JUCE) ------------------------------------
-add_library(SampleKeyCore STATIC Source/KeyDetector.cpp Source/KeyDetector.h)
-target_include_directories(SampleKeyCore PUBLIC Source)
+add_library(SampleKeyCore STATIC KeyDetector.cpp KeyDetector.h)
+target_include_directories(SampleKeyCore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(SKA_BUILD_TESTS)
     enable_testing()
-    add_executable(KeyDetectorTests Tests/KeyDetectorTests.cpp)
+    add_executable(KeyDetectorTests KeyDetectorTests.cpp)
     target_link_libraries(KeyDetectorTests PRIVATE SampleKeyCore)
     add_test(NAME KeyDetectorTests COMMAND KeyDetectorTests)
 endif()
 
-# ---- JUCE: use ./JUCE if you cloned it there, otherwise download 8.0.4 -------
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
     add_subdirectory(JUCE)
 else()
@@ -30,7 +28,6 @@ else()
     FetchContent_MakeAvailable(JUCE)
 endif()
 
-# ---- The plugin ----------------------------------------------------------------
 juce_add_plugin(SampleKeyAnalyzer
     COMPANY_NAME "SampleKey"
     PLUGIN_MANUFACTURER_CODE Skey
@@ -45,8 +42,8 @@ juce_add_plugin(SampleKeyAnalyzer
     COPY_PLUGIN_AFTER_BUILD FALSE)
 
 target_sources(SampleKeyAnalyzer PRIVATE
-    Source/PluginProcessor.cpp Source/PluginProcessor.h
-    Source/PluginEditor.cpp Source/PluginEditor.h)
+    PluginProcessor.cpp PluginProcessor.h
+    PluginEditor.cpp PluginEditor.h)
 
 target_compile_definitions(SampleKeyAnalyzer PUBLIC
     JUCE_WEB_BROWSER=0
